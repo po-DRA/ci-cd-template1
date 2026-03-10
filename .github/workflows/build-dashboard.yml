@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.9.4
 
       - name: Install dependencies
         run: pixi install
@@ -22,7 +22,7 @@ jobs:
       - name: Export dashboard to HTML
         run: pixi run marimo export html notebooks/dashboard.py -o dashboard.html
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dashboard
           path: dashboard.html
