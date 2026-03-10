@@ -6,16 +6,16 @@ A hands-on teaching template that walks you through the **full modern Python ML 
 
 ```mermaid
 flowchart LR
-    Start([Fork & open\nCodespace]) --> F1[Flow 1\nTrain model]
-    F1 --> F2[Flow 2\nRun tests]
-    F2 --> F4[Flow 4\nCode quality]
-    F4 --> F7[Flow 7\nGitHub Actions]
-    F7 --> F5[Flow 5\nPackage]
-    F5 --> F6[Flow 6\nPublish to\nTestPyPI]
+    Start(["Fork & open<br/>Codespace"]) --> F1["Flow 1<br/>Train model"]
+    F1 --> F2["Flow 2<br/>Run tests"]
+    F2 --> F4["Flow 4<br/>Code quality"]
+    F4 --> F7["Flow 7<br/>GitHub Actions"]
+    F7 --> F5["Flow 5<br/>Package"]
+    F5 --> F6["Flow 6<br/>Publish to<br/>TestPyPI"]
 
-    F2 -.->|go deeper| T[Flows 3 – 3d\nAdvanced testing]
-    F4 -.->|go deeper| Q[Flows 9 – 10\nmypy · pre-commit]
-    F7 -.->|go deeper| O[Flows 11 – 12\nDependabot · PR workflow]
+    F2 -.->|go deeper| T["Flows 3 – 3d<br/>Advanced testing"]
+    F4 -.->|go deeper| Q["Flows 9 – 10<br/>mypy · pre-commit"]
+    F7 -.->|go deeper| O["Flows 11 – 12<br/>Dependabot · PR workflow"]
 ```
 
 > **New here? Follow the solid arrows.** Each core flow takes 5–15 minutes.
@@ -172,12 +172,12 @@ This project has six layers of testing, from fast and isolated to slow and integ
 
 ```mermaid
 flowchart TD
-    U["Unit tests · test_unit.py\nFast · no files · pure functions"]
-    M["Model tests · test_model.py\nPipeline shape + prediction checks"]
-    E["E2E tests · test_e2e.py\nFull data → train → predict"]
-    P["Property-based · test_hypothesis.py\nHundreds of random inputs  "]
-    S["Snapshot tests · test_snapshots.py\nDetect silent output changes"]
-    MU["Mutation testing · mutmut\nDo tests actually catch bugs?"]
+    U["Unit tests · test_unit.py<br/>Fast · no files · pure functions"]
+    M["Model tests · test_model.py<br/>Pipeline shape + prediction checks"]
+    E["E2E tests · test_e2e.py<br/>Full data → train → predict"]
+    P["Property-based · test_hypothesis.py<br/>Hundreds of random inputs"]
+    S["Snapshot tests · test_snapshots.py<br/>Detect silent output changes"]
+    MU["Mutation testing · mutmut<br/>Do tests actually catch bugs?"]
 
     U --> M --> E
     U -.->|Flow 3d — advanced| P
@@ -764,10 +764,10 @@ code or create a release.
 
 ```mermaid
 flowchart LR
-    P["git push\n(any branch)"] --> T["test.yml\ntrain + pytest"]
-    D["data/ or scripts/\nchanged"] --> TR["train.yml\nretrain → artifact"]
-    N["notebooks/ or model/\nchanged"] --> DB["build-dashboard.yml\nHTML artifact"]
-    R["GitHub Release\npublished"] --> PB["publish.yml\nbuild → TestPyPI"]
+    P["git push<br/>(any branch)"] --> T["test.yml<br/>train + pytest"]
+    D["data/ or scripts/<br/>changed"] --> TR["train.yml<br/>retrain → artifact"]
+    N["notebooks/ or model/<br/>changed"] --> DB["build-dashboard.yml<br/>HTML artifact"]
+    R["GitHub Release<br/>published"] --> PB["publish.yml<br/>build → TestPyPI"]
 
     T -->|all tests pass| G["✅ PR can merge"]
     T -->|any test fails| B["❌ PR blocked"]
