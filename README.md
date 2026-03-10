@@ -17,7 +17,7 @@ A hands-on teaching template that walks you through the **full modern Python ML 
 | Interactive dashboard | [Marimo](https://marimo.io) |
 | Packaging a Python library | `pyproject.toml` + `build` |
 | Publishing to TestPyPI | `twine` / GitHub Actions |
-| Automated CI/CD pipelines | GitHub Actions |
+| Automated CI/CD pipelines | [GitHub Actions](https://docs.github.com/en/actions) |
 
 ---
 
