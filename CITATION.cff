@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "CI/CD Template for ML Projects"
+message: "If you use this teaching template, please cite it using the information below."
+type: software
+authors:
+  - family-names: Ojha
+    given-names: Priyanka
+    orcid: https://orcid.org/0000-0002-6844-6493
+repository-code: https://github.com/po-DRA/ci-cd-template
+license: MIT
+version: 0.1.0
+date-released: "2026-03-10"
+abstract: >
+  A minimal ML project template for teaching automated testing, CI/CD pipelines,
+  Python packaging, and TestPyPI publishing using GitHub Actions, pixi, pytest,
+  and scikit-learn. Built around a cardiovascular disease classification task.
+keywords:
+  - machine-learning
+  - ci-cd
+  - python
+  - teaching
+  - github-actions
+  - packaging

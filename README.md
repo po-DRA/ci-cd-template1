@@ -662,6 +662,11 @@ This is what a CI pipeline runs to block merges on poorly-formatted code.
 Packaging turns your source code into a distributable `.whl` (wheel) and
 `.tar.gz` (source distribution).
 
+> **Before publishing, edit these 3 fields in `pyproject.toml`:**
+> - `name` — must be globally unique on PyPI (e.g. `cardio-risk-yourname`)
+> - `version` — start at `0.1.0`, bump before each release
+> - `authors` — replace `Your Name` / `you@example.com`
+
 ```bash
 pixi run build
 # runs: python -m build
@@ -680,11 +685,27 @@ ls dist/
 # ci_cd_template-0.1.0.tar.gz
 ```
 
+> **What's in the wheel?** Only the importable Python code under `src/`:
+> `model.py`, `predict.py`, `__init__.py`.
+> Scripts, notebooks, data, and tests are automatically excluded.
+> The trained `model.joblib` artifact is **not** in the wheel — it is
+> generated at runtime and uploaded separately by the `train.yml` CI workflow.
+
 Validate the package before uploading:
 ```bash
 twine check dist/*
 # Checking dist/ci_cd_template-0.1.0-py3-none-any.whl: PASSED
 # Checking dist/ci_cd_template-0.1.0.tar.gz: PASSED
+```
+
+**What the installed package exports:**
+```python
+# After pip install ci_cd_template, you can import the training code:
+from ci_cd_template import train_model, predict, FEATURES
+
+# To use predict(), you need a trained model file:
+# either run `pixi run train` in the source repo,
+# or pass a custom model_path=Path("...") to predict()
 ```
 
 ### Key `pyproject.toml` fields
@@ -1212,6 +1233,26 @@ Both make excellent follow-on exercises.
 - [TestPyPI](https://test.pypi.org/) · [Real PyPI](https://pypi.org/)
 - [Marimo](https://marimo.io/)
 - [Original cardiovascular dataset on Kaggle](https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset)
+
+---
+
+## Citation
+
+If you use this template for teaching, research, or derivative work, please cite it:
+
+```bibtex
+@software{ojha_cicd_template,
+  author  = {Ojha, Priyanka},
+  orcid   = {https://orcid.org/0000-0002-6844-6493},
+  title   = {CI/CD Template for ML Projects},
+  url     = {https://github.com/po-DRA/ci-cd-template},
+  version = {0.1.0},
+  year    = {2026},
+  license = {MIT}
+}
+```
+
+A machine-readable [`CITATION.cff`](CITATION.cff) file is also included in this repository.
 
 ---
 

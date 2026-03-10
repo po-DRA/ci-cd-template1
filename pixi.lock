@@ -946,13 +946,12 @@ packages:
 - pypi: ./
   name: ci-cd-template
   version: 0.1.0
-  sha256: b48c8f433a7d5c455530a421fdd2135709fad3a43d3ba770591cc2f9963d3e73
+  sha256: a289832313fa0adbcc0703d36a7ce7a164b7a05c634e1b5f2dfac7e6eba6b9b6
   requires_dist:
   - numpy
   - pandas
   - scikit-learn
   - joblib
-  - marimo
   requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/noarch/click-8.3.1-pyh8f84b5b_1.conda
   sha256: 38cfe1ee75b21a8361c8824f5544c3866f303af1762693a178266d7f198e8715
