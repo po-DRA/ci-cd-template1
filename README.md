@@ -15,7 +15,7 @@ A hands-on teaching template that walks you through the **full modern Python ML 
 | Code quality (lint + format) | [Ruff](https://docs.astral.sh/ruff/) |
 | Training an ML model | [scikit-learn](https://scikit-learn.org) |
 | Interactive dashboard | [Marimo](https://marimo.io) |
-| Packaging a Python library | `pyproject.toml` + `build` |
+| Packaging a Python library | `pyproject.toml` + `build` [Packaging Python Projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/) |
 | Publishing to TestPyPI | `twine` / GitHub Actions |
 | Automated CI/CD pipelines | [GitHub Actions](https://docs.github.com/en/actions) |
 
