@@ -304,13 +304,21 @@ model = train_model(df, target="age")    # age is not binary!
 pixi run train && pixi run test
 ```
 
-The model trains silently (age is a valid column), but the binary-label test
-catches it:
+Training succeeds (sklearn only emits a warning about a non-binary target), but
+the two tests that load `model.joblib` from disk fail with a `ValueError`.
+Why? `train_model` uses `df.drop(columns=[target])` for `X` — so with `target="age"`,
+the model was fitted with `cardio` as a feature column, not `age`.
+When tests predict using `df[FEATURES]` (which has `age`, not `cardio`), sklearn
+detects the mismatch and raises:
 
 ```
-FAILED tests/test_02_model.py::test_model_predicts_binary_labels
-1 failed in 0.49s
+FAILED tests/test_02_model.py::test_saved_model_predicts_high_risk
+FAILED tests/test_03_e2e.py::test_predict_function_end_to_end
+2 failed, 30 passed
 ```
+
+Tests that use the in-memory `trained_model` fixture still pass — they always
+train fresh with `target="cardio"` and never touch the saved file.
 
 ### Revert all experiments at once
 
