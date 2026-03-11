@@ -34,6 +34,7 @@ minversion = "7.0"
 # --maxfail=1 is removed so all test failures are visible at once (useful with coverage/hypothesis)
 addopts = "--disable-warnings -q"
 testpaths = ["tests"]
+norecursedirs = ["incoming"]   # tests/incoming/ holds files not yet active — move them in as you progress
 
 # ── Flow 4 (advanced): coverage config ────────────────────────────────────────
 [tool.coverage.run]

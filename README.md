@@ -81,7 +81,12 @@ ci-cd-template/
 │
 ├── tests/
 │   ├── conftest.py              # shared pytest fixtures
-│   └── test_model.py            # 6 automated tests
+│   ├── test_01_unit.py          # Flow 2 — pure function unit tests
+│   ├── test_02_model.py         # Flow 2 — model prediction tests
+│   ├── test_03_e2e.py           # Flow 2 — end-to-end pipeline tests
+│   └── incoming/                # move files here → tests/ as you progress
+│       ├── test_04_hypothesis.py    # Flow 3d — property-based tests
+│       └── test_05_snapshots.py     # Flow 3d — snapshot tests
 │
 ├── .env.example                 # copy to .env and fill in your tokens
 ├── .gitignore
@@ -168,15 +173,18 @@ Model trained and saved to /workspaces/ci-cd-template/model/model.joblib
 
 ## Flow 2 — Run automated tests  ·  ⏱ 5 min  ·  required
 
+> **Three test files are already active in `tests/`** (`test_01_unit.py`, `test_02_model.py`, `test_03_e2e.py`).
+> Advanced tests live in `tests/incoming/` — you will move them in when you reach Flows 3d.
+
 This project has six layers of testing, from fast and isolated to slow and integrated:
 
 ```mermaid
 flowchart TD
-    U["Unit tests · test_unit.py<br/>Fast · no files · pure functions"]
-    M["Model tests · test_model.py<br/>Pipeline shape + prediction checks"]
-    E["E2E tests · test_e2e.py<br/>Full data → train → predict"]
-    P["Property-based · test_hypothesis.py<br/>Hundreds of random inputs"]
-    S["Snapshot tests · test_snapshots.py<br/>Detect silent output changes"]
+    U["Unit tests · test_01_unit.py<br/>Fast · no files · pure functions"]
+    M["Model tests · test_02_model.py<br/>Pipeline shape + prediction checks"]
+    E["E2E tests · test_03_e2e.py<br/>Full data → train → predict"]
+    P["Property-based · test_04_hypothesis.py<br/>Hundreds of random inputs"]
+    S["Snapshot tests · test_05_snapshots.py<br/>Detect silent output changes"]
     MU["Mutation testing · mutmut<br/>Do tests actually catch bugs?"]
 
     U --> M --> E
@@ -233,7 +241,7 @@ Try each experiment, observe the error message, then **revert** before moving on
 
 ### Experiment A — Wrong expected label
 
-Open `tests/test_model.py` and flip the assertion in `test_high_risk_patient_classified_as_cardio`:
+Open `tests/test_02_model.py` and flip the assertion in `test_high_risk_patient_classified_as_cardio`:
 
 ```python
 # Change this:
@@ -247,7 +255,7 @@ pixi run test
 ```
 
 ```
-FAILED tests/test_model.py::test_high_risk_patient_classified_as_cardio
+FAILED tests/test_02_model.py::test_high_risk_patient_classified_as_cardio
 AssertionError: Expected cardio=1 for high-risk patient, got 1
 1 failed, 5 passed in 0.51s
 ```
@@ -262,12 +270,12 @@ pixi run test
 ```
 
 ```
-SKIPPED tests/test_e2e.py::test_predict_function_end_to_end
+SKIPPED tests/test_03_e2e.py::test_predict_function_end_to_end
 31 passed, 1 skipped
 ```
 
 No failures — the test is **skipped**, not failed.
-Open `tests/test_e2e.py` and find the guard at the top of that test:
+Open `tests/test_03_e2e.py` and find the guard at the top of that test:
 
 ```python
 @pytest.mark.skipif(
@@ -300,14 +308,14 @@ The model trains silently (age is a valid column), but the binary-label test
 catches it:
 
 ```
-FAILED tests/test_model.py::test_model_predicts_binary_labels
+FAILED tests/test_02_model.py::test_model_predicts_binary_labels
 1 failed in 0.49s
 ```
 
 ### Revert all experiments at once
 
 ```bash
-git checkout -- tests/test_model.py tests/conftest.py scripts/train.py
+git checkout -- tests/test_02_model.py tests/conftest.py scripts/train.py
 ```
 
 > **What's next →** Flow 3b: write a unit test for a pure function — or skip ahead to Flow 4 (code quality).
@@ -323,19 +331,19 @@ of logic in complete isolation — no files, no model, no ML computation.
 perfect candidate: it is a pure function that maps a probability to a label.
 
 ```bash
-pixi run test tests/test_unit.py -v
+pixi run test tests/test_01_unit.py -v
 ```
 
 ```
-tests/test_unit.py::test_high_probability_is_high_risk PASSED
-tests/test_unit.py::test_low_probability_is_low_risk PASSED
-tests/test_unit.py::test_zero_probability_is_low_risk PASSED
-tests/test_unit.py::test_full_probability_is_high_risk PASSED
-tests/test_unit.py::test_at_threshold_is_high_risk PASSED
-tests/test_unit.py::test_just_below_threshold_is_low_risk PASSED
-tests/test_unit.py::test_just_above_threshold_is_high_risk PASSED
-tests/test_unit.py::test_negative_probability_raises PASSED
-tests/test_unit.py::test_probability_above_one_raises PASSED
+tests/test_01_unit.py::test_high_probability_is_high_risk PASSED
+tests/test_01_unit.py::test_low_probability_is_low_risk PASSED
+tests/test_01_unit.py::test_zero_probability_is_low_risk PASSED
+tests/test_01_unit.py::test_full_probability_is_high_risk PASSED
+tests/test_01_unit.py::test_at_threshold_is_high_risk PASSED
+tests/test_01_unit.py::test_just_below_threshold_is_low_risk PASSED
+tests/test_01_unit.py::test_just_above_threshold_is_high_risk PASSED
+tests/test_01_unit.py::test_negative_probability_raises PASSED
+tests/test_01_unit.py::test_probability_above_one_raises PASSED
 9 passed in 0.04s
 ```
 
@@ -354,11 +362,11 @@ return "HIGH RISK" if probability > RISK_THRESHOLD else "LOW RISK"
 
 Run the unit tests:
 ```bash
-pixi run test tests/test_unit.py -v
+pixi run test tests/test_01_unit.py -v
 ```
 
 ```
-FAILED tests/test_unit.py::test_at_threshold_is_high_risk
+FAILED tests/test_01_unit.py::test_at_threshold_is_high_risk
 AssertionError: assert 'LOW RISK' == 'HIGH RISK'
 1 failed, 8 passed in 0.04s
 ```
@@ -378,16 +386,16 @@ An E2E test runs the **entire pipeline** from real data to a final prediction �
 no mocks, no fixtures, no hand-crafted DataFrames.
 
 ```bash
-pixi run test tests/test_e2e.py -v
+pixi run test tests/test_03_e2e.py -v
 ```
 
 ```
-tests/test_e2e.py::test_data_file_exists PASSED
-tests/test_e2e.py::test_data_has_expected_columns PASSED
-tests/test_e2e.py::test_data_target_is_binary PASSED
-tests/test_e2e.py::test_pipeline_trains_and_predicts_on_real_data PASSED
-tests/test_e2e.py::test_pipeline_accuracy_above_threshold PASSED
-tests/test_e2e.py::test_risk_label_pipeline_end_to_end PASSED
+tests/test_03_e2e.py::test_data_file_exists PASSED
+tests/test_03_e2e.py::test_data_has_expected_columns PASSED
+tests/test_03_e2e.py::test_data_target_is_binary PASSED
+tests/test_03_e2e.py::test_pipeline_trains_and_predicts_on_real_data PASSED
+tests/test_03_e2e.py::test_pipeline_accuracy_above_threshold PASSED
+tests/test_03_e2e.py::test_risk_label_pipeline_end_to_end PASSED
 6 passed in 0.32s
 ```
 
@@ -398,12 +406,12 @@ tests/test_e2e.py::test_risk_label_pipeline_end_to_end PASSED
 | Tests | One function | Model on fixtures | Full pipeline on real data |
 | Speed | Very fast (ms) | Fast (< 1 s) | Slower (reads files + trains) |
 | Finds | Logic bugs | Model behaviour bugs | Integration bugs |
-| Example | `test_unit.py` | `test_model.py` | `test_e2e.py` |
+| Example | `test_01_unit.py` | `test_02_model.py` | `test_03_e2e.py` |
 
 > **Design exercise:** If this project had a web API that accepted patient JSON
 > and returned a risk score, what would an E2E test look like?
 > (Start the server → POST patient data → assert response shape and label.)
-> Read the teaching notes in [tests/test_e2e.py](tests/test_e2e.py) for more.
+> Read the teaching notes in [tests/test_03_e2e.py](tests/test_03_e2e.py) for more.
 
 > **What's next →** Flow 4: check code quality with `pixi run lint` — or go deeper in Flow 3d (advanced testing, optional).
 
@@ -461,8 +469,13 @@ Lines highlighted in **red** are not covered; **green** are covered.
 
 ### Property-based testing — test with hundreds of random inputs
 
+> **Before running:** move the file into the active test folder:
+> ```bash
+> mv tests/incoming/test_04_hypothesis.py tests/
+> ```
+
 ```bash
-pixi run test tests/test_hypothesis.py -v
+pixi run test tests/test_04_hypothesis.py -v
 ```
 
 Hypothesis generates random valid patient records and verifies that:
@@ -480,7 +493,7 @@ def classify_risk(probability: float) -> str:
 ```
 
 ```bash
-pixi run test tests/test_hypothesis.py -v
+pixi run test tests/test_04_hypothesis.py -v
 ```
 
 Hypothesis will find a counterexample, then **shrink** it to the smallest failing
@@ -499,6 +512,12 @@ Revert: `git checkout -- src/ci_cd_template/model.py`
 
 ### Snapshot testing — detect unintended output changes
 
+> **Before running:** move the file into the active test folder, then generate baselines:
+> ```bash
+> mv tests/incoming/test_05_snapshots.py tests/
+> pixi run snapshot-update
+> ```
+
 Snapshot tests lock in the **exact output** of a function. First, generate the
 baseline snapshots:
 
@@ -506,7 +525,7 @@ baseline snapshots:
 pixi run snapshot-update
 ```
 
-This creates `tests/__snapshots__/test_snapshots.ambr`. **Commit this file.**
+This creates `tests/__snapshots__/test_05_snapshots.ambr`. **Commit this file.**
 
 On every subsequent run, the output is compared against the stored snapshot:
 
@@ -515,10 +534,10 @@ pixi run test
 ```
 
 ```
-tests/test_snapshots.py::test_prediction_output_keys_are_stable PASSED
-tests/test_snapshots.py::test_high_risk_patient_label_snapshot PASSED
-tests/test_snapshots.py::test_low_risk_patient_label_snapshot PASSED
-tests/test_snapshots.py::test_classify_risk_label_snapshots PASSED
+tests/test_05_snapshots.py::test_prediction_output_keys_are_stable PASSED
+tests/test_05_snapshots.py::test_high_risk_patient_label_snapshot PASSED
+tests/test_05_snapshots.py::test_low_risk_patient_label_snapshot PASSED
+tests/test_05_snapshots.py::test_classify_risk_label_snapshots PASSED
 4 passed in 0.08s
 ```
 
@@ -912,9 +931,9 @@ pixi run train                  # train model → model/model.joblib
 
 # ── Flow 2 & 3: tests ──────────────────────────────────────────────────────────
 pixi run test                           # run ALL tests
-pixi run test tests/test_unit.py -v     # unit tests only
-pixi run test tests/test_e2e.py -v      # E2E tests only
-pixi run test tests/test_hypothesis.py  # property-based tests
+pixi run test tests/test_01_unit.py -v     # unit tests only
+pixi run test tests/test_03_e2e.py -v      # E2E tests only
+pixi run test tests/test_04_hypothesis.py  # property-based tests
 
 # ── Flow 3d: advanced testing ──────────────────────────────────────────────────
 pixi run coverage                                        # coverage report + HTML
