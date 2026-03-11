@@ -252,26 +252,37 @@ AssertionError: Expected cardio=1 for high-risk patient, got 1
 1 failed, 5 passed in 0.51s
 ```
 
-### Experiment B — Reversed training labels
+### Experiment B — Missing model artefact
 
-Open `tests/conftest.py` and flip all `cardio` values in `sample_df`:
-
-```python
-"cardio": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],   # was [1,1,1,1,1,0,0,0,0,0]
-```
+Delete the saved model file, then run the tests:
 
 ```bash
+rm model/model.joblib
 pixi run test
 ```
 
 ```
-FAILED tests/test_model.py::test_high_risk_patient_classified_as_cardio
-FAILED tests/test_model.py::test_low_risk_patient_classified_as_no_cardio
-2 failed in 0.53s
+SKIPPED tests/test_e2e.py::test_predict_function_end_to_end
+31 passed, 1 skipped
 ```
 
-The model learned a backwards rule — high blood pressure now predicts "healthy".
-This shows why label quality is critical.
+No failures — the test is **skipped**, not failed.
+Open `tests/test_e2e.py` and find the guard at the top of that test:
+
+```python
+@pytest.mark.skipif(
+    not MODEL_PATH.exists(),
+    reason="model/model.joblib not found — run pixi run train first",
+)
+def test_predict_function_end_to_end():
+    ...
+```
+
+`pytest.mark.skipif` is how you handle **optional artefacts** in CI.
+The test only runs when the model file exists — if CI runs tests before training,
+the test is skipped gracefully rather than crashing the pipeline.
+
+> **Revert:** run `pixi run train` to regenerate `model/model.joblib` before continuing.
 
 ### Experiment C — Wrong target column
 
