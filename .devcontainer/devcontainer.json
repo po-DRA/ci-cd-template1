@@ -10,8 +10,9 @@
         "ghcr.io/prefix-dev/devcontainer-features/pixi:1": {}
     },
 
-    // Install all project dependencies on container creation
-    "postCreateCommand": "pixi install",
+    // onCreateCommand runs during prebuild (baked into the cached image).
+    // postCreateCommand runs after the user gets the container — keep it fast.
+    "onCreateCommand": "pixi install",
 
     "customizations": {
         "vscode": {
