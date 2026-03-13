@@ -41,7 +41,7 @@ ci_cd_template = { path = ".", editable = true }
 
 # ── Flow 4 (advanced): mutation testing — do tests actually catch bugs? ───────
 # mutmut is PyPI-only (not on conda-forge), so it goes here
-mutmut = ">=2.0"
+mutmut = ">=3.0"
 
 # mypy stubs for pandas and scikit-learn (needed for type checking to work)
 pandas-stubs = ">=2.0"
@@ -61,7 +61,7 @@ test               = "pytest"                            # run all tests
 # ── Flow 4 (advanced) ──────────────────────────────────────────────────────────
 coverage           = "pytest --cov=ci_cd_template --cov-report=term-missing --cov-report=html"
 snapshot-update    = "pytest --snapshot-update"                          # refresh snapshot files
-mutate             = "mutmut run --paths-to-mutate src/ci_cd_template"
+mutate             = "mutmut run"
 
 # ── Flow 5: code quality ───────────────────────────────────────────────────────
 lint               = "ruff check src tests scripts"      # find code issues

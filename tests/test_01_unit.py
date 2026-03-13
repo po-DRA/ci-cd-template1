@@ -13,8 +13,8 @@ classify_risk() is a perfect candidate:
 Exercise: run these tests, then deliberately break classify_risk() by changing
 the comparison operator or the threshold, and watch them fail.
 
-    pixi run test tests/test_unit.py      # run only this file
-    pixi run test tests/test_unit.py -v   # verbose output
+    pixi run test tests/test_01_unit.py      # run only this file
+    pixi run test tests/test_01_unit.py -v   # verbose output
 
 To break the function, try changing model.py:
     return "HIGH RISK" if probability > RISK_THRESHOLD else "LOW RISK"

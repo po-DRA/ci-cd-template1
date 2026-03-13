@@ -1,0 +1,27 @@
+{
+    "name": "CI/CD Template",
+
+    // Clean Ubuntu base — avoids the default Python feature that auto-installs Poetry
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+    "features": {
+        // Installs Pixi; Pixi then provides Python + all project dependencies
+        "ghcr.io/prefix-dev/devcontainer-features/pixi:1": {}
+    },
+
+    // Install all project dependencies on container creation
+    "postCreateCommand": "pixi install",
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "charliermarsh.ruff",
+                "ms-python.mypy-type-checker"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "${workspaceFolder}/.pixi/envs/default/bin/python"
+            }
+        }
+    }
+}

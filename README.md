@@ -54,7 +54,11 @@ Credit and thanks to the original dataset creator.
 
 ```
 ci-cd-template/
+├── .devcontainer/
+│   └── devcontainer.json        # Codespaces config — uses Pixi, skips Poetry
+│
 ├── .github/
+│   ├── dependabot.yml           # auto-PRs when GitHub Actions get new versions
 │   └── workflows/
 │       ├── test.yml             # runs on every push: train → pytest
 │       ├── train.yml            # runs when data/ or scripts/ change
@@ -270,25 +274,27 @@ pixi run test
 ```
 
 ```
+SKIPPED tests/test_02_model.py::test_saved_model_predicts_high_risk
 SKIPPED tests/test_03_e2e.py::test_predict_function_end_to_end
-31 passed, 1 skipped
+30 passed, 2 skipped
 ```
 
-No failures — the test is **skipped**, not failed.
-Open `tests/test_03_e2e.py` and find the guard at the top of that test:
+No failures — the tests are **skipped**, not failed.
+Both `test_02_model.py` and `test_03_e2e.py` guard their disk-loading tests with the same decorator:
 
 ```python
 @pytest.mark.skipif(
     not MODEL_PATH.exists(),
     reason="model/model.joblib not found — run pixi run train first",
 )
-def test_predict_function_end_to_end():
+def test_saved_model_predicts_high_risk():
     ...
 ```
 
 `pytest.mark.skipif` is how you handle **optional artefacts** in CI.
-The test only runs when the model file exists — if CI runs tests before training,
-the test is skipped gracefully rather than crashing the pipeline.
+Any test that requires a file to exist first is decorated with this guard —
+if CI runs tests before training, the test is skipped gracefully rather than
+crashing the pipeline.
 
 > **Revert:** run `pixi run train` to regenerate `model/model.joblib` before continuing.
 
@@ -323,8 +329,12 @@ train fresh with `target="cardio"` and never touch the saved file.
 ### Revert all experiments at once
 
 ```bash
-git checkout -- tests/test_02_model.py tests/conftest.py scripts/train.py
+git checkout -- tests/test_02_model.py tests/conftest.py scripts/train.py src/ci_cd_template/model.py
+pixi run train   # regenerate model.joblib with the correct target
 ```
+
+> **Important:** `git checkout` only restores source files — it does **not** fix a saved model that was trained with the wrong target.
+> Always re-run `pixi run train` after reverting Experiment C.
 
 > **What's next →** Flow 3b: write a unit test for a pure function — or skip ahead to Flow 4 (code quality).
 
@@ -437,19 +447,29 @@ Opens a terminal report showing which lines are **not** covered, and also
 generates an HTML report in `htmlcov/index.html`:
 
 ```
-Name                              Stmts   Miss  Cover   Missing
----------------------------------------------------------------
-src/ci_cd_template/model.py          20      0   100%
-src/ci_cd_template/predict.py        12      5    58%   32-45
----------------------------------------------------------------
-TOTAL                                32      5    84%
+Name                            Stmts   Miss  Cover   Missing
+-------------------------------------------------------------
+src/ci_cd_template/model.py        17      0   100%
+src/ci_cd_template/predict.py      11      0   100%
+-------------------------------------------------------------
+TOTAL                              28      0   100%
+Coverage HTML written to dir htmlcov
+Required test coverage of 80.0% reached. Total coverage: 100.00%
+22 passed in 0.37s
 ```
 
 Coverage is enforced in CI at ≥ 80% (configured in `pyproject.toml`).
 
 #### Make coverage fail
 
-Add an unreachable function to any source file:
+First, raise the minimum threshold in `pyproject.toml`:
+
+```toml
+[tool.coverage.report]
+fail_under = 100   # raised from 80 — any uncovered line will now fail
+```
+
+Then add an unreachable function to any source file:
 
 ```python
 def untested_helper(x):
@@ -461,8 +481,10 @@ pixi run coverage
 ```
 
 ```
-FAIL Required test coverage of 80% not reached. Total coverage: 76.00%
+FAIL Required test coverage of 100% not reached. Total coverage: 93.33%
 ```
+
+Revert both changes: `git checkout -- pyproject.toml src/ci_cd_template/model.py`
 
 #### View the HTML report
 
@@ -504,14 +526,23 @@ def classify_risk(probability: float) -> str:
 pixi run test tests/test_04_hypothesis.py -v
 ```
 
-Hypothesis will find a counterexample, then **shrink** it to the smallest failing
-input:
+Hypothesis finds counterexamples and **shrinks** them to the smallest failing input.
+Two tests fail — both rely on `classify_risk()` returning the correct label:
 
 ```
-Falsifying example: test_classify_risk_high_for_any_probability_at_or_above_threshold(
-    prob=0.5,    ← smallest probability that breaks the property
-)
-AssertionError: assert 'LOW RISK' == 'HIGH RISK'
+FAILED tests/test_04_hypothesis.py::test_classify_risk_high_for_any_probability_at_or_above_threshold
+    Falsifying example: test_classify_risk_high_for_any_probability_at_or_above_threshold(
+        prob=0.5,   ← smallest probability that breaks the property
+    )
+    AssertionError: assert 'LOW RISK' == 'HIGH RISK'
+
+FAILED tests/test_04_hypothesis.py::test_risk_label_matches_predicted_label
+    Falsifying example: test_risk_label_matches_predicted_label(
+        patient={...},   ← Hypothesis generated a high-risk patient (pred=1)
+    )
+    AssertionError: assert 'LOW RISK' == 'HIGH RISK'
+
+2 failed, 4 passed in 14.16s
 ```
 
 Revert: `git checkout -- src/ci_cd_template/model.py`
@@ -580,8 +611,8 @@ pixi run mutate
 This may take a few minutes. After it finishes, view the results:
 
 ```bash
-mutmut results        # summary
-mutmut show 1         # show diff for mutant #1
+pixi run mutmut results        # summary
+pixi run mutmut show 1         # show diff for mutant #1
 ```
 
 Example surviving mutant (a gap to fix):
@@ -646,8 +677,8 @@ Run `pixi run lint` again — `All checks passed!`
 #### Explore available rules
 
 ```bash
-ruff rule F401      # explain one rule
-ruff linter         # list all built-in linters
+pixi run ruff rule F401      # explain one rule
+pixi run ruff linter         # list all built-in linters
 ```
 
 ### Formatting — consistent style
@@ -684,7 +715,7 @@ Formatters are **idempotent** — two runs always give the same result.
 #### Check-only mode (used in CI)
 
 ```bash
-ruff format --check src tests scripts
+pixi run ruff format --check src tests scripts
 ```
 
 Exits with a non-zero code if any file needs reformatting without changing files.
@@ -731,7 +762,7 @@ ls dist/
 
 Validate the package before uploading:
 ```bash
-twine check dist/*
+pixi run twine check dist/*
 # Checking dist/ci_cd_template-0.1.0-py3-none-any.whl: PASSED
 # Checking dist/ci_cd_template-0.1.0.tar.gz: PASSED
 ```
@@ -794,7 +825,7 @@ pixi run build
 # Load the token from .env (Linux / macOS / Codespaces)
 export TEST_PYPI_API_TOKEN=$(grep TEST_PYPI_API_TOKEN .env | cut -d= -f2)
 
-twine upload --repository testpypi dist/* \
+pixi run twine upload --repository testpypi dist/* \
   --username __token__ \
   --password "$TEST_PYPI_API_TOKEN"
 ```
@@ -947,14 +978,14 @@ pixi run test tests/test_04_hypothesis.py  # property-based tests
 pixi run coverage                                        # coverage report + HTML
 pixi run snapshot-update                                 # create/refresh snapshots
 pixi run mutate                                          # mutation testing (slow, local only)
-mutmut results                                           # show mutation score
-mutmut show <id>                                         # show a surviving mutant
+pixi run mutmut results                                  # show mutation score
+pixi run mutmut show <id>                                # show a surviving mutant
 
 # ── Flow 5 & 9–10: code quality ────────────────────────────────────────────────
 pixi run lint                      # check for code issues
 pixi run lint-fix             # auto-fix safe issues
 pixi run format                    # auto-format source files
-ruff format --check src tests      # check formatting (no changes, CI-safe)
+pixi run ruff format --check src tests      # check formatting (no changes, CI-safe)
 pixi run typecheck                 # static type analysis with mypy
 pixi run pre-commit-install        # one-time: register hooks in .git/hooks/
 pixi run pre-commit                # run all hooks on all files manually
@@ -964,7 +995,7 @@ pixi run dashboard                 # open interactive Marimo notebook
 
 # ── Flow 7 & 8: packaging ──────────────────────────────────────────────────────
 pixi run build                     # build wheel + sdist → dist/
-twine check dist/*                 # validate packages before uploading
+pixi run twine check dist/*                 # validate packages before uploading
 
 # ── Flow 12: PR workflow ────────────────────────────────────────────────────────
 git checkout -b feature/<name>     # always work on a branch, not main

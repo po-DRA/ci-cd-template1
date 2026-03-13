@@ -45,6 +45,11 @@ omit   = ["*/__init__.py"]
 fail_under   = 80       # CI fails if coverage drops below 80 %
 show_missing = true     # show which lines are not covered
 
+# ── Flow 4 (advanced): mutation testing config ────────────────────────────────
+[tool.mutmut]
+paths_to_mutate = ["src/ci_cd_template"]
+tests_dir       = "tests/"
+
 # ── Flow 5 (advanced): mypy type checking config ──────────────────────────────
 [tool.mypy]
 python_version = "3.11"
