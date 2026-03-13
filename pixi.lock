@@ -946,7 +946,7 @@ packages:
 - pypi: ./
   name: ci-cd-template
   version: 0.1.0
-  sha256: 2927762b3871c5ef6abdd87f5cb5cee75754838abf953b558d922c50d8ace4a4
+  sha256: af640e466408483644d1e6bc4a2afbd965738ca6048c4ec273154e262874ebe7
   requires_dist:
   - numpy
   - pandas

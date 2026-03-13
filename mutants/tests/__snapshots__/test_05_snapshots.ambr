@@ -1,0 +1,20 @@
+# serializer version: 1
+# name: test_classify_risk_label_snapshots
+  dict({
+    'high': 'HIGH RISK',
+    'low': 'LOW RISK',
+    'mid': 'HIGH RISK',
+  })
+# ---
+# name: test_high_risk_patient_label_snapshot
+  1
+# ---
+# name: test_low_risk_patient_label_snapshot
+  0
+# ---
+# name: test_prediction_output_keys_are_stable
+  list([
+    'cardio',
+    'risk_label',
+  ])
+# ---

@@ -81,3 +81,8 @@ def train_model(df: pd.DataFrame, target: str = TARGET) -> Pipeline:
     )
     pipeline.fit(X, y)
     return pipeline
+
+
+def untested_helper(x):
+    x = 1 + 2
+    return x
