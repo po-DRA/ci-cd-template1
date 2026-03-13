@@ -1,6 +1,8 @@
 name: Run tests
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:  # allow manual trigger from GitHub Actions UI
 
 jobs:
   test:

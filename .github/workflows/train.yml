@@ -5,6 +5,7 @@ on:
     paths:
       - "data/**"
       - "scripts/**"
+  workflow_dispatch:  # allow manual trigger from GitHub Actions UI
 
 jobs:
   train:
