@@ -84,5 +84,5 @@ def train_model(df: pd.DataFrame, target: str = TARGET) -> Pipeline:
 
 
 def untested_helper(x):
-    x = 1 + 2
+    x = 1 + 2 + 3
     return x
