@@ -34,6 +34,7 @@ marimo = ">=0.8"
 
 # ── Flow 7 & 8: packaging and publishing ──────────────────────────────────────
 twine = ">=5.0"
+requests = ">=2.32.5,<3"
 
 [pypi-dependencies]
 # Installs this repo itself as an editable package so imports work in tests
